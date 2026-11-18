@@ -169,6 +169,33 @@ td:first-child{font-weight:600}
 @keyframes march{to{stroke-dashoffset:-17}}
 @media (max-width:640px){.guide{grid-template-columns:1fr}.gnav{flex-direction:row}.gbtn{flex:1}}
 @media (max-width:920px){.co2{grid-template-columns:1fr}.lesson{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* dashboard: diorama with charts beside it (no scrolling down) */
+.wrap{max-width:1560px}
+.dash{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);gap:16px;align-items:start}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0;position:sticky;top:16px}
+.side .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.side .co2{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.side .stat{padding:10px 12px;gap:4px}
+.side .big{font-size:24px}
+.side .co2 .big{font-size:20px}
+.side .co2 .big small{display:block;margin:0;font-size:11.5px}
+.side .co2 .lbl{font-size:11.5px}
+.side .co2 .mut{font-size:11.5px;line-height:1.5}
+.side .co2 .tag{display:none}
+.side .mix .r{grid-template-columns:52px 1fr 40px;gap:6px}
+.side .spark{height:52px}
+@media (min-width:1101px){
+  .dash .stage{height:calc(100svh - 32px);min-height:560px;max-height:1000px}
+  .dash #scene{width:100%;height:100%}
+}
+@media (max-width:1100px){
+  .dash{grid-template-columns:1fr}
+  .side{position:static}
+  .side .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:920px){.side .stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.side .stats,.side .co2{grid-template-columns:1fr}}
 </style>
 
 <main class="wrap" dir="rtl" lang="ckb">
@@ -193,6 +220,7 @@ td:first-child{font-weight:600}
     </div>
   </section>
 
+  <div class="dash">
   <section class="stage" aria-label="نەخشەی سیستەمی وزە">
     <svg id="scene" viewBox="-390 -235 780 650" role="img" aria-label="سۆلار، مۆلیدە، کارەبای حکومی و ماڵ"></svg>
 
@@ -244,6 +272,7 @@ td:first-child{font-weight:600}
     </div>
   </section>
 
+  <aside class="side">
   <section class="stats">
     <div class="stat card">
       <div class="head"><span class="lbl">بەرهەمی سۆلار</span><span class="tag" style="background:#ffe9a6">٥ kW</span></div>
@@ -286,6 +315,8 @@ td:first-child{font-weight:600}
       <div class="mut" id="cTrees">بەرامبەرە بە کاری ٠ دار لە ڕۆژێکدا</div>
     </div>
   </section>
+  </aside>
+  </div>
 
   <section class="lesson">
     <article class="sec card wide">
