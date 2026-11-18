@@ -562,7 +562,7 @@ svg.insertAdjacentHTML('beforeend','<polygon id="focus" class="focus" points="" 
 ['tGrid','tSol','tGen','tHouse','tBatt'].forEach(id=>svg.appendChild(svg.querySelector('#'+id)));
 
 // ---------- simulation ----------
-const SOL_CAP=5, BATT_CAP=10, BATT_P=3, GEN_CAP=4, MIN_SOC=.2;
+const SOL_CAP=5, BATT_CAP=10, BATT_P=3, GEN_CAP=4, MIN_SOC=.2, GEN_START=.5;
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const st={t:9.5,play:!reduce,speed:1,gridMode:'schedule',genMode:'auto',cloudy:false,batt:6.2,
   day:{solProd:0,sol:0,bat:0,grd:0,gen:0,unmet:0},hist:[],slot:-1,cur:null};
@@ -582,9 +582,12 @@ function compute(t,dt){
   if(surplus>0) charge=Math.min(surplus,BATT_P,room/Math.max(dt,1e-3));
   if(rem>0&&g){grd=rem;rem=0;}
   if(g&&st.batt<BATT_CAP*.9&&charge<1){const ex=Math.min(1-charge,room/Math.max(dt,1e-3));grd+=ex;charge+=ex;}
-  // grid cut: the neighbourhood generator takes over; the battery is the last backup
-  if(rem>0&&st.genMode==='auto'){gen=Math.min(rem,GEN_CAP);rem-=gen;}
-  if(rem>0&&!noSolar){const avail=Math.max(0,st.batt-BATT_CAP*MIN_SOC);dis=Math.min(rem,BATT_P,avail/Math.max(dt,1e-3));rem-=dis;}
+  // grid cut: battery first down to 50%, then the generator runs until the grid returns;
+  // the last 50%–20% of the battery is a reserve for when the generator is off
+  const DT=Math.max(dt,1e-3), genAuto=st.genMode==='auto', floor=genAuto?GEN_START:MIN_SOC;
+  if(rem>0&&!noSolar){dis=Math.min(rem,BATT_P,Math.max(0,st.batt-BATT_CAP*floor)/DT);rem-=dis;}
+  if(rem>0&&genAuto){gen=Math.min(rem,GEN_CAP);rem-=gen;}
+  if(rem>0&&!noSolar){const d2=Math.min(rem,BATT_P-dis,Math.max(0,st.batt-dis*DT-BATT_CAP*MIN_SOC)/DT);dis+=Math.max(0,d2);rem-=Math.max(0,d2);}
   return {L,sol,sUse,charge,dis,grd,gen,unmet:Math.max(0,rem),g,gridLoad:Math.min(grd,L-sUse)};
 }
 function integrate(dt){
@@ -780,13 +783,13 @@ const steps=[
  {title:'کارەبای حکومی',t:9,grid:'on',focus:GRID,play:true,
   text:'ئەم کارەبایە لە وێستگەکانی بەرهەمهێنانەوە دێت کە گاز یان نەوت دەسووتێنن. بۆ هەر کیلۆوات‌کاتژمێرێک نزیکەی ٠٫٧ کگم گازی CO₂ دەچێتە ناو هەواوە. لە کوردستان زۆرجار بە خشتە دێت و دەبڕێت.'},
  {title:'بڕانی کارەبا و مۆلیدە',t:20.5,grid:'off',batt:2,focus:GEN,play:true,
-  text:'کاتێک کارەبای حکومی دەبڕێت، مۆلیدە دەکەوێتە کار، و کاتێک کارەبای حکومی دێتەوە، مۆلیدە دەکوژێتەوە. مۆلیدە دیزڵ دەسووتێنێت: دووکەڵ، بۆنی خراپ، دەنگە دەنگ، و نزیکەی ١ کگم CO₂ بۆ هەر kWh. ئەمە پیسترین سەرچاوەکەیە.'},
+  text:'کاتێک کارەبای حکومی دەبڕێت، سەرەتا پاتری ماڵەکە بەڕێوە دەبات. کاتێک پاتری دەگاتە ٥٠٪، مۆلیدە دەکەوێتە کار و تا کارەبای حکومی دێتەوە کار دەکات. مۆلیدە دیزڵ دەسووتێنێت: دووکەڵ، بۆنی خراپ، دەنگە دەنگ، و نزیکەی ١ کگم CO₂ بۆ هەر kWh. ئەمە پیسترین سەرچاوەکەیە.'},
  {title:'شەو: پاتری کار دەکات',t:21,grid:'off',gen:'off',batt:9,focus:SOLAR,play:true,
   text:'شەوان پانێڵەکان کارەبا دروست ناکەن. بەڵام ئەو کارەبایەی بە ڕۆژ لە پاتریدا هەڵگیرا، ئێستا ماڵەکە ڕووناک دەکاتەوە. نە مۆلیدە پێویستە و نە دووکەڵ دروست دەبێت.'},
  {title:'ڕۆژی هەوراوی',t:12.5,grid:'off',cloudy:true,focus:SOLAR,play:true,
   text:'هەور ڕێگری لە تیشکی خۆر دەکات، بۆیە بەرهەمی پانێڵەکان زۆر کەم دەبێتەوە (لێرەدا بۆ نزیکەی ٣٥٪). لەبەر ئەوە ماڵەکان هێشتا پێویستیان بە سەرچاوەیەکی یەدەگ هەیە.'},
  {title:'سویچ و ڕیزبەندی سەرچاوەکان',t:17,focus:HOUSE,play:true,
-  text:'سندوقە خۆڵەمێشییەکەی ناوەڕاست سویچی ئۆتۆماتیکە. یەکەم جار سۆلار بەکاردەهێنێت، پاشان کارەبای حکومی. کاتێک کارەبای حکومی دەبڕێت، مۆلیدە دەکەوێتە کار و کاتێک کارەبا دێتەوە دەکوژێتەوە. پاتریش یەدەگە بۆ کاتێک کە هیچیان نییە. هەرچەند سۆلار زیاتر بێت، مۆلیدە کەمتر کار دەکات.'},
+  text:'سندوقە خۆڵەمێشییەکەی ناوەڕاست سویچی ئۆتۆماتیکە. یەکەم جار سۆلار بەکاردەهێنێت، پاشان کارەبای حکومی. کاتێک کارەبای حکومی دەبڕێت، پاتری کار دەکات. کاتێک پاتری دەگاتە ٥٠٪، مۆلیدە دەکەوێتە کار و کاتێک کارەبا دێتەوە دەکوژێتەوە. هەرچەند سۆلار زیاتر بێت، مۆلیدە کەمتر کار دەکات.'},
  {title:'ئەنجام: بۆچی سۆلار باشترە بۆ ژینگە؟',t:17,play:true,
   text:'سۆلار هیچ گازێکی گەرمکەری زەوی دروست ناکات، هەوای شار پاک دەکاتەوە و دەنگە دەنگی مۆلیدە نامێنێت. کوردستان ساڵانە زیاتر لە ٣٠٠٠ کاتژمێر خۆری هەیە. کارتەکانی تەنیشت وێنەکە پیشان دەدەن چەند پارە پاشەکەوت دەکرێت و ئەمڕۆ چەند گاز ڕێگری لێکرا.'}
 ];
