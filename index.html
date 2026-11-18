@@ -153,6 +153,11 @@ th{font-size:12.5px;color:var(--muted);font-weight:700}
 td:first-child{font-weight:600}
 .good{color:var(--batt);font-weight:700}.mid{color:var(--gen);font-weight:700}.bad{color:var(--load);font-weight:700}
 .note{font-size:12.5px;color:var(--muted)}
+.reflist{margin:0 0 6px;padding-inline-start:22px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.reflist a,.refs a{color:var(--grid);overflow-wrap:anywhere}
+.reflist a:focus-visible{outline:2px solid var(--grid);outline-offset:2px}
+.refsub{font-family:var(--f-display);font-size:15px;margin:12px 0 6px}
+.refs ul{font-size:14px}
 .guide{padding:16px 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;border-color:var(--gen)!important;box-shadow:4px 4px 0 var(--gen)}
 .gbody{min-width:0;display:flex;flex-direction:column;gap:6px}
 .gnum{font-weight:800;font-size:13px;padding:1px 10px;border-radius:999px;background:var(--gen);color:#fff;font-variant-numeric:tabular-nums}
@@ -458,6 +463,25 @@ body.present .gfs{background:var(--chip);color:#25241f}
     <article class="sec card wide">
       <h2>ئەنجام</h2>
       <p>تێکەڵکردنی سۆلار لەگەڵ پاتری، پشتبەستن بە مۆلیدە زۆر کەم دەکاتەوە. لە سیمولەیشنەکەدا کەشوهەوا بکە بە «ساماڵ» و مۆلیدە بکە بە «کوژاوە»، ئینجا سەیری بکە ماڵەکە چەند کاتژمێر بە سۆلار و پاتری کار دەکات. پاشان کەشوهەوا بکە بە «هەوراوی» و جیاوازییەکە ببینە.</p>
+    </article>
+
+    <article class="sec card wide refs" id="sources">
+      <h2>سەرچاوەکان</h2>
+      <ol class="reflist">
+        <li><b>نرخی کارەبای حکومی (پلەکانی ٧٢ تا ٣٥٠ دینار):</b> Peregraf, “24-Hour Electricity Tariffs Announced”, ٢٠٢٥. <a href="https://peregraf.com/en/report/8947" target="_blank" rel="noopener">peregraf.com/en/report/8947</a></li>
+        <li><b>پرۆگرامی ڕووناکی و کارەبای ٢٤ کاتژمێر:</b> Kurdistan24, “Kurdistan’s Electricity Revolution: What Happens After 24-Hour Power?”. <a href="https://www.kurdistan24.net/en/story/944026" target="_blank" rel="noopener">kurdistan24.net/en/story/944026</a></li>
+        <li><b>نرخی ئەمپێری مۆلیدە لە هەولێر:</b> 964media, “Erbil residents pay highest generator fees in the region”. <a href="https://en.964media.com/?p=631" target="_blank" rel="noopener">en.964media.com/?p=631</a></li>
+        <li><b>نرخی ئەمپێر لە کەرکووک (١٥ هەزار دینار):</b> Kurdistan24, “Kirkuk Cuts Generator Electricity Prices to 15,000 Dinars After Protests”. <a href="https://www.kurdistan24.net/en/story/950190" target="_blank" rel="noopener">kurdistan24.net/en/story/950190</a></li>
+        <li><b>CO₂ ی سۆلار لە ماوەی تەمەنیدا (نزیکەی ٠٫٠٥ کگم بۆ kWh):</b> IPCC, Fifth Assessment Report, Working Group III, Annex III، ٢٠١٤. <a href="https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf" target="_blank" rel="noopener">ipcc.ch</a></li>
+        <li><b>کاتژمێرەکانی خۆر لە هەولێر (زیاتر لە ٣٠٠٠ کاتژمێر لە ساڵێکدا):</b> Climate-Data.org, “Erbil climate” (نزیکەی ٣٧٥٠ کاتژمێر). <a href="https://en.climate-data.org/location/4976/" target="_blank" rel="noopener">en.climate-data.org/location/4976</a></li>
+      </ol>
+      <h3 class="refsub">ئەو ژمارانەی خەمڵاندنن</h3>
+      <ul>
+        <li><b>CO₂ ی مۆلیدە (نزیکەی ١ کگم بۆ kWh):</b> سووتاندنی یەک لیتر دیزڵ نزیکەی ٢٫٧ کگم CO₂ دروست دەکات، و مۆلیدەیەکی بچووک بۆ هەر kWh نزیکەی ٠٫٣ تا ٠٫٤ لیتر دەسووتێنێت.</li>
+        <li><b>CO₂ ی کارەبای حکومی (نزیکەی ٠٫٧ کگم بۆ kWh):</b> بۆ وێستگەی گاز و نەوت، کە زۆربەی کارەبای عێراق و هەرێم لەوانەوە دێت.</li>
+        <li><b>دار:</b> دارێک نزیکەی ٢٠ تا ٢٥ کگم CO₂ لە ساڵێکدا هەڵدەمژێت (نزیکەی ٠٫٠٦ کگم لە ڕۆژێکدا).</li>
+        <li><b>بەکارهێنانی ماڵ، قەبارەی سیستەم و نرخی دامەزراندن (٩ ملیۆن دینار):</b> نموونەیین بۆ ماڵێکی ئاسایی، نەک خوێندنەوەی ماڵێکی دیاریکراو.</li>
+      </ul>
     </article>
   </section>
 </main>
