@@ -340,7 +340,7 @@ body.present .gfs{background:var(--chip);color:#25241f}
     </div>
     <div class="msave"><span class="lbl">پاشەکەوت</span><span class="big" id="mSave" style="color:var(--batt)">—</span></div>
     <div class="mut" id="mPay">—</div>
-    <div class="note">نرخی نزیکەیی: حکومی ١٠٠ دینار، مۆلیدە ٤٠٠ دینار بۆ هەر kWh · سیستەم و دامەزراندن ٩ ملیۆن دینار</div>
+    <div class="note">کارەبای حکومی بە پلە: ٧٢ دینار بۆ یەکەم ٤٠٠ kWh، پاشان ١٠٨، ١٧٥، ٢٦٥ و ٣٥٠ · مۆلیدە نزیکەی ١٥ هەزار دینار بۆ هەر ئەمپێرێک لە مانگێکدا (≈ ٢٥٠ دینار بۆ kWh) · سیستەم و دامەزراندن ٩ ملیۆن دینار</div>
   </section>
 
   <section class="stats">
@@ -635,7 +635,8 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const st={t:9.5,play:!reduce,speed:1,gridMode:'schedule',genMode:'auto',cloudy:false,batt:6.2,
   day:{solProd:0,sol:0,bat:0,grd:0,gen:0,unmet:0},hist:[],slot:-1,cur:null};
 const gauss=(t,m,w)=>Math.exp(-((t-m)**2)/(2*w*w));
-const loadAt=t=>.55+1.1*gauss(t,7.5,1)+1.5*gauss(t,14,2.2)+2.2*gauss(t,20.5,1.8)+2.2*gauss(t+24,20.5,1.8);
+// a typical home: about 22–24 kWh a day (≈ 700 kWh a month)
+const loadAt=t=>.7*(.55+1.1*gauss(t,7.5,1)+1.5*gauss(t,14,2.2)+2.2*gauss(t,20.5,1.8)+2.2*gauss(t+24,20.5,1.8));
 const sunAt=t=>Math.max(0,Math.sin(Math.PI*(t-6)/13));
 const gridOn=t=>st.gridMode==='on'?true:st.gridMode==='off'?false:Math.floor(t/4)%2===0;
 
@@ -668,7 +669,10 @@ function integrate(dt){
   st.cur=r;
 }
 // ---------- money (approximate Kurdistan prices, IQD) ----------
-const PRICE_GRID=100, PRICE_GEN=400, SYS_COST=9000000;
+// KRG household tariff (Runaki, 2025): tiered per kWh each month. Generator: ~15,000 IQD per ampere a month ≈ 250 IQD per kWh
+const TIERS=[[400,72],[400,108],[400,175],[400,265],[Infinity,350]];
+function tierCost(kwh){let c=0,left=Math.max(0,kwh);for(const [size,p] of TIERS){const u=Math.min(left,size);c+=u*p;left-=u;if(left<=0)break;}return c;}
+const PRICE_GEN=250, SYS_COST=9000000;
 let noSolar=false;
 const moneyCache={};
 function simDay(withSolar){
@@ -676,7 +680,7 @@ function simDay(withSolar){
   noSolar=!withSolar; st.batt=withSolar?5.5:0; st.day={solProd:0,sol:0,bat:0,grd:0,gen:0,unmet:0}; st.hist=[]; st.slot=-1;
   for(st.t=0;st.t<24;st.t+=.05) integrate(.05);
   const d=st.day; noSolar=false; Object.assign(st,keep);
-  return d.grd*PRICE_GRID+d.gen*PRICE_GEN+(withSolar?0:d.unmet*PRICE_GEN);
+  return (tierCost(d.grd*30)+(d.gen+(withSolar?0:d.unmet))*30*PRICE_GEN)/30;
 }
 const fmtIQD=n=>n>=1e6?ku((n/1e6).toFixed(1))+' ملیۆن':ku(Math.round(n/1000))+' هەزار';
 function renderMoney(){
@@ -926,12 +930,12 @@ function buildYear(){
   }
   return days;
 }
-let YEAR=null;
+let YEAR=null,MRATE=[];
 const TODAY=new Date(),calThisYear=TODAY.getFullYear()===CAL_Y;
 let calView='month',calM=calThisYear?TODAY.getMonth():10,calSel=calThisYear?TODAY.getDate():null;
 function agg(list){const a={load:0,sol:0,bat:0,grd:0,grdAll:0,gen:0,unmet:0,solProd:0};
-  list.forEach(o=>{for(const k in a)a[k]+=o[k];});
-  a.cost=a.grdAll*PRICE_GRID+a.gen*PRICE_GEN;a.co2=a.grdAll*.7+a.gen*1;a.share=(a.sol+a.bat)/Math.max(.01,a.load);return a;}
+  let gc=0;list.forEach(o=>{for(const k in a)a[k]+=o[k];gc+=o.grdAll*MRATE[o.date[0]];});
+  a.cost=gc+a.gen*PRICE_GEN;a.co2=a.grdAll*.7+a.gen*1;a.share=(a.sol+a.bat)/Math.max(.01,a.load);return a;}
 const kwhTxt=n=>n>=10000?ku((n/1000).toFixed(1))+' MWh':ku(Math.round(n))+' kWh';
 const iqd=n=>n<1000?ku(Math.round(n)):fmtIQD(n);
 function stack(o){const t=Math.max(.01,o.sol+o.bat+o.grd+o.gen);
@@ -944,7 +948,9 @@ function dayDetail(o){const a=agg([o]);
     `<div class="drow">${[['سۆلار',o.sol,'var(--solar)'],['پاتری',o.bat,'var(--batt)'],['حکومی',o.grd,'var(--grid)'],['مۆلیدە',o.gen,'var(--gen)']].map(([n,v,c])=>`<span><i style="background:${c}"></i>${n}: ${f1(v)} kWh</span>`).join('')}</div>`+
     `<div class="mut">تێچوو: ${iqd(a.cost)} دینار · CO₂: ${f1(a.co2)} کگم · بەرهەمی پانێڵەکان: ${f1(o.solProd)} kWh</div>`;}
 function renderCal(){
-  if(!YEAR)YEAR=buildYear();
+  if(!YEAR){YEAR=buildYear();
+    // the tariff is applied to each month's total, so each month gets its own average price per kWh
+    MRATE=MONTHS.map((_,m)=>{const g=YEAR.filter(o=>o.date[0]===m).reduce((s,o)=>s+o.grdAll,0);return g>0?tierCost(g)/g:TIERS[0][1];});}
   syncSeg('calView',calView);
   $('calMonth').hidden=calView!=='month';$('calYear').hidden=calView!=='year';$('monthNav').hidden=calView!=='month';
   if(calView==='month'){
