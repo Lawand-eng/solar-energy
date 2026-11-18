@@ -175,27 +175,44 @@ td:first-child{font-weight:600}
 .dash{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);gap:16px;align-items:start}
 .side{display:flex;flex-direction:column;gap:12px;min-width:0;position:sticky;top:16px}
 .side .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.side .co2{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .side .stat{padding:10px 12px;gap:4px}
 .side .big{font-size:24px}
-.side .co2 .big{font-size:20px}
-.side .co2 .big small{display:block;margin:0;font-size:11.5px}
-.side .co2 .lbl{font-size:11.5px}
-.side .co2 .mut{font-size:11.5px;line-height:1.5}
-.side .co2 .tag{display:none}
 .side .mix .r{grid-template-columns:52px 1fr 40px;gap:6px}
 .side .spark{height:52px}
 @media (min-width:1101px){
   .dash .stage{height:calc(100svh - 32px);min-height:560px;max-height:1000px}
   .dash #scene{width:100%;height:100%}
 }
+.cmp{display:flex;flex-direction:column;gap:6px}
+.cmp .r{display:grid;grid-template-columns:82px 1fr 92px;gap:8px;align-items:center;font-size:12.5px}
+.cmp .r b{font-weight:700;font-variant-numeric:tabular-nums;text-align:left;white-space:nowrap}
+.msave{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-top:1px dashed var(--line);padding-top:6px;margin-top:2px}
+.msave .big{font-size:22px}
+.money .note{font-size:11px;line-height:1.5}
+.clockrow{display:flex;align-items:baseline;gap:10px}
+.period{font-size:12.5px;font-weight:700;padding:1px 10px;border-radius:999px;border:1.5px solid var(--stroke);background:var(--chip);color:#25241f}
+.gfs{font-size:13px;padding:6px 12px;background:var(--card);color:var(--fg)}
+#scene .chg{animation:chg 1.2s ease-in-out infinite}
+@keyframes chg{50%{opacity:.55}}
+@media (prefers-reduced-motion: reduce){#scene .chg{animation:none}}
+/* classroom presentation (fullscreen) */
+body.present .proj,body.present .lesson{display:none}
+body.present .wrap{max-width:none;height:100vh;height:100dvh;padding:12px 16px;gap:12px}
+body.present .guide{padding:10px 16px}
+body.present .gtitle{font-size:22px}
+body.present .gtext{font-size:17px;line-height:1.7}
+body.present .dash{flex:1;min-height:0;align-items:stretch}
+body.present .dash .stage{height:100%;min-height:0;max-height:none}
+body.present .side{position:static;overflow:auto;gap:10px}
+body.present .money .note,body.present #cTrees{display:none}
+body.present .gfs{background:var(--chip);color:#25241f}
 @media (max-width:1100px){
   .dash{grid-template-columns:1fr}
   .side{position:static}
   .side .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 @media (max-width:920px){.side .stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:520px){.side .stats,.side .co2{grid-template-columns:1fr}}
+@media (max-width:520px){.side .stats{grid-template-columns:1fr}.cmp .r{grid-template-columns:72px 1fr 84px}}
 </style>
 
 <main class="wrap" dir="rtl" lang="ckb">
@@ -217,6 +234,7 @@ td:first-child{font-weight:600}
     <div class="gnav">
       <button class="btn gbtn" id="gPrev" type="button">→ پێشتر</button>
       <button class="btn gbtn gmain" id="gNext" type="button">دواتر ←</button>
+      <button class="btn gbtn gfs" id="fsBtn" type="button" aria-pressed="false" title="پیشاندان لە پۆلدا (F)">⛶ پڕکردنەوەی شاشە</button>
     </div>
   </section>
 
@@ -227,7 +245,7 @@ td:first-child{font-weight:600}
     <div class="ov ov-status card">
       <h1>سیستەمی وزەی ماڵ</h1>
       <p class="sub">سۆلار · مۆلیدە · کارەبای حکومی</p>
-      <div class="clock" id="clock">٠٩:٣٠</div>
+      <div class="clockrow"><div class="clock" id="clock">٠٩:٣٠</div><span class="period" id="period"></span></div>
       <div class="status" id="status"></div>
       <div class="next" id="next"></div>
     </div>
@@ -298,22 +316,26 @@ td:first-child{font-weight:600}
     </div>
   </section>
 
-  <section class="co2" aria-label="کاریگەری ژینگەیی">
-    <div class="stat card">
-      <div class="head"><span class="lbl">CO₂ ی مۆلیدە ئەمڕۆ</span><span class="tag" style="background:#ffd9bf">دیزڵ</span></div>
-      <div class="big" id="cGen">٠<small>کگم CO₂</small></div>
-      <div class="mut">نزیکەی ١ کگم بۆ هەر kWh</div>
+  <section class="stat card money" aria-label="تێچووی کارەبا">
+    <div class="head"><span class="lbl">تێچووی کارەبا لە مانگێکدا</span><span class="tag" style="background:#ffe9a6">دینار</span></div>
+    <div class="cmp">
+      <div class="r"><span>بێ سۆلار</span><div class="bar"><span id="mNoBar" style="background:var(--gen)"></span></div><b id="mNo">—</b></div>
+      <div class="r"><span>لەگەڵ سۆلار</span><div class="bar"><span id="mSolBar" style="background:var(--batt)"></span></div><b id="mSol">—</b></div>
     </div>
-    <div class="stat card">
-      <div class="head"><span class="lbl">CO₂ ی کارەبای حکومی ئەمڕۆ</span><span class="tag" style="background:#d6e4ff">وێستگە</span></div>
-      <div class="big" id="cGrid">٠<small>کگم CO₂</small></div>
-      <div class="mut">نزیکەی ٠٫٧ کگم بۆ هەر kWh (گاز و نەوت)</div>
+    <div class="msave"><span class="lbl">پاشەکەوت</span><span class="big" id="mSave" style="color:var(--batt)">—</span></div>
+    <div class="mut" id="mPay">—</div>
+    <div class="note">نرخی نزیکەیی: حکومی ١٠٠ دینار، مۆلیدە ٤٠٠ دینار بۆ هەر kWh · سیستەم و دامەزراندن ٩ ملیۆن دینار</div>
+  </section>
+
+  <section class="stat card co2c" aria-label="کاریگەری ژینگەیی">
+    <div class="head"><span class="lbl">CO₂ ی ئەمڕۆ</span><span class="tag" style="background:#c9f0d9">کگم</span></div>
+    <div class="cmp">
+      <div class="r"><span>مۆلیدە</span><div class="bar"><span id="cGenBar" style="background:var(--gen)"></span></div><b id="cGen">٠</b></div>
+      <div class="r"><span>حکومی</span><div class="bar"><span id="cGridBar" style="background:var(--grid)"></span></div><b id="cGrid">٠</b></div>
+      <div class="r"><span>سۆلار</span><div class="bar"><span id="cSolBar" style="background:var(--batt)"></span></div><b>٠</b></div>
     </div>
-    <div class="stat card">
-      <div class="head"><span class="lbl">CO₂ ی ڕێگیری لێکرا بە سۆلار</span><span class="tag" style="background:#c9f0d9">پاک</span></div>
-      <div class="big" id="cSaved" style="color:var(--batt)">٠<small>کگم CO₂</small></div>
-      <div class="mut" id="cTrees">بەرامبەرە بە کاری ٠ دار لە ڕۆژێکدا</div>
-    </div>
+    <div class="msave"><span class="lbl">ڕێگیری لێکرا بە سۆلار</span><span class="big" id="cSaved" style="color:var(--batt)">٠</span></div>
+    <div class="mut" id="cTrees">بەرامبەرە بە کاری ٠ دار لە ڕۆژێکدا</div>
   </section>
   </aside>
   </div>
@@ -402,10 +424,12 @@ function label(id,x,y,z){const p=P(x,y,z);return `<g id="${id}" class="lbl" tran
 
 // ---------- build scene ----------
 let s='';
-s+=`<rect x="-390" y="-235" width="780" height="650" fill="var(--sky)"/>`;
+s+=`<defs><linearGradient id="skyG" gradientUnits="userSpaceOnUse" x1="0" y1="-235" x2="0" y2="330"><stop id="skyTop" offset="0" stop-color="#5fb0ec"/><stop id="skyBot" offset="1" stop-color="#cfe8f7"/></linearGradient></defs>`;
+s+=`<rect x="-3000" y="-3000" width="6000" height="6000" fill="url(#skyG)"/>`;
+s+=`<g id="stars" opacity="0">${Array.from({length:46},(_,i)=>{const x=-385+((i*137.5)%770),y=-230+((i*71.3)%250),r=(i%3===0?1.6:1);return `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r}" fill="#fff8d6"/>`}).join('')}</g>`;
 // sky objects
 s+=`<g id="sun"><g class="rays">${Array.from({length:10},(_,i)=>{const a=i*Math.PI/5;return `<line class="pl" x1="${(Math.cos(a)*24).toFixed(1)}" y1="${(Math.sin(a)*24).toFixed(1)}" x2="${(Math.cos(a)*32).toFixed(1)}" y2="${(Math.sin(a)*32).toFixed(1)}"/>`}).join('')}</g><circle r="18" fill="#f3dc7a" stroke="var(--stroke)" stroke-width="1.3"/></g>`;
-s+=`<g id="moon" opacity="0"><circle r="15" fill="#f4f0dc" stroke="var(--stroke)" stroke-width="1.2"/><circle cx="7" cy="-5" r="13" fill="var(--sky)"/></g>`;
+s+=`<g id="moon" opacity="0"><path d="M4 -15 A15 15 0 1 0 14 6 A12 12 0 0 1 4 -15 Z" fill="#f4f0dc" stroke="var(--stroke)" stroke-width="1.2" style="filter:drop-shadow(0 0 8px #f4f0dc88)"/></g>`;
 s+=`<g id="cloud" opacity="0"><path class="solid" fill="#fffdf6" d="M-46 10 a14 14 0 0 1 6-24 a20 20 0 0 1 36-8 a16 16 0 0 1 28 6 a13 13 0 0 1 4 26 z"/></g>`;
 // board
 s+=`<g class="board">`+poly([[.5,.6,-.6],[14.5,.6,-.6],[14.5,14.6,-.6],[.5,14.6,-.6]],'var(--shade)','opacity=".18" style="stroke:none"')+box(0,0,-.55,14,14,.55,'var(--board)','var(--board-s1)','var(--board-s2)')+`</g>`;
@@ -461,9 +485,13 @@ s+=tile(9,1);
   o+=row(9.4,12.0,3.1,4.1,T+1.05,T+.35,3);
   // inverter + battery
   o+=box(12.25,1.6,T,.5,.7,.8,'#eef0f2','#cfd4da','#b7bec6');
-  o+=box(12.2,3.3,T,.6,1.0,1.1,'#e9ecef','#c9cfd6','#adb5bf');
-  o+=`<polygon points="${pts([[12.8,3.45,T+.15],[12.8,4.15,T+.15],[12.8,4.15,T+.95],[12.8,3.45,T+.95]])}" fill="#2b2a26"/>`;
+  // battery: tall cabinet with a live level gauge on its face
+  o+=box(12.05,2.95,T,.85,1.35,1.75,'#e9ecef','#c9cfd6','#adb5bf');
+  o+=`<polygon points="${pts([[12.9,3.1,T+.15],[12.9,4.15,T+.15],[12.9,4.15,T+1.55],[12.9,3.1,T+1.55]])}" fill="#2b2a26"/>`;
   o+=`<polygon id="battLvl" points="" fill="var(--batt)" style="stroke:none"/>`;
+  for(let k=1;k<5;k++){const z=T+.15+1.4*k/5;o+=line([12.9,3.1,z],[12.9,4.15,z]);}
+  o+=box(12.3,3.35,T+1.75,.3,.2,.12,'#9aa2ab','#7d858f','#6a727c');
+  o+=box(12.3,3.8,T+1.75,.3,.2,.12,'#9aa2ab','#7d858f','#6a727c');
   s+=o;
 })();
 
@@ -519,8 +547,9 @@ s+=label('tGrid',4.6,5.0,0);
 s+=label('tSol',12.6,5.0,0);
 s+=label('tGen',4.6,13.0,0);
 s+=label('tHouse',12.6,13.0,0);
+s+=label('tBatt',12.0,2.4,T+3.0);
 // night overlay + glow layer
-s+=`<rect id="night" x="-390" y="-235" width="780" height="650" fill="var(--night)" opacity="0" style="pointer-events:none"/>`;
+s+=`<rect id="night" x="-3000" y="-3000" width="6000" height="6000" fill="var(--night)" opacity="0" style="pointer-events:none"/>`;
 s+=`<g id="glow" opacity="0"></g>`;
 const svg=document.getElementById('scene');
 svg.innerHTML=s;
@@ -530,7 +559,7 @@ svg.querySelectorAll('.win').forEach(w=>{const c=w.cloneNode();c.setAttribute('c
 // focus ring for the guided explanation
 svg.insertAdjacentHTML('beforeend','<polygon id="focus" class="focus" points="" opacity="0"/>');
 // re-attach labels above night overlay
-['tGrid','tSol','tGen','tHouse'].forEach(id=>svg.appendChild(svg.querySelector('#'+id)));
+['tGrid','tSol','tGen','tHouse','tBatt'].forEach(id=>svg.appendChild(svg.querySelector('#'+id)));
 
 // ---------- simulation ----------
 const SOL_CAP=5, BATT_CAP=10, BATT_P=3, GEN_CAP=4, MIN_SOC=.2;
@@ -545,15 +574,15 @@ const gridOn=t=>st.gridMode==='on'?true:st.gridMode==='off'?false:Math.floor(t/4
 // Seed today's history up to the start time so the chart isn't empty
 function compute(t,dt){
   const L=loadAt(t);
-  const sol=SOL_CAP*sunAt(t)*(st.cloudy?.35:1);
+  const sol=noSolar?0:SOL_CAP*sunAt(t)*(st.cloudy?.35:1);
   const g=gridOn(t);
   let rem=L; const sUse=Math.min(sol,rem); rem-=sUse; const surplus=sol-sUse;
   let charge=0,dis=0,grd=0,gen=0;
-  const room=BATT_CAP-st.batt;
+  const room=noSolar?0:BATT_CAP-st.batt;
   if(surplus>0) charge=Math.min(surplus,BATT_P,room/Math.max(dt,1e-3));
   if(rem>0&&g){grd=rem;rem=0;}
   if(g&&st.batt<BATT_CAP*.9&&charge<1){const ex=Math.min(1-charge,room/Math.max(dt,1e-3));grd+=ex;charge+=ex;}
-  if(rem>0){const avail=Math.max(0,st.batt-BATT_CAP*MIN_SOC);dis=Math.min(rem,BATT_P,avail/Math.max(dt,1e-3));rem-=dis;}
+  if(rem>0&&!noSolar){const avail=Math.max(0,st.batt-BATT_CAP*MIN_SOC);dis=Math.min(rem,BATT_P,avail/Math.max(dt,1e-3));rem-=dis;}
   if(rem>0&&st.genMode==='auto'){gen=Math.min(rem,GEN_CAP);rem-=gen;}
   return {L,sol,sUse,charge,dis,grd,gen,unmet:Math.max(0,rem),g,gridLoad:Math.min(grd,L-sUse)};
 }
@@ -565,6 +594,28 @@ function integrate(dt){
   const slot=Math.floor(st.t*4);
   if(slot!==st.slot){st.slot=slot;st.hist[slot]={l:r.L,s:r.sol};}
   st.cur=r;
+}
+// ---------- money (approximate Kurdistan prices, IQD) ----------
+const PRICE_GRID=100, PRICE_GEN=400, SYS_COST=9000000;
+let noSolar=false;
+const moneyCache={};
+function simDay(withSolar){
+  const keep={t:st.t,batt:st.batt,day:st.day,hist:st.hist,slot:st.slot,cur:st.cur};
+  noSolar=!withSolar; st.batt=withSolar?5.5:0; st.day={solProd:0,sol:0,bat:0,grd:0,gen:0,unmet:0}; st.hist=[]; st.slot=-1;
+  for(st.t=0;st.t<24;st.t+=.05) integrate(.05);
+  const d=st.day; noSolar=false; Object.assign(st,keep);
+  return d.grd*PRICE_GRID+d.gen*PRICE_GEN+(withSolar?0:d.unmet*PRICE_GEN);
+}
+const fmtIQD=n=>n>=1e6?ku((n/1e6).toFixed(1))+' ملیۆن':ku(Math.round(n/1000))+' هەزار';
+function renderMoney(){
+  const key=[st.cloudy,st.gridMode,st.genMode].join('|');
+  let m=moneyCache[key];
+  if(!m){const a=simDay(false)*30,b=simDay(true)*30;m=moneyCache[key]={no:a,sol:b};}
+  const save=Math.max(0,m.no-m.sol), mx=Math.max(1,m.no,m.sol);
+  $('mNo').textContent=fmtIQD(m.no); $('mSol').textContent=fmtIQD(m.sol);
+  $('mNoBar').style.width=(m.no/mx*100).toFixed(1)+'%'; $('mSolBar').style.width=(m.sol/mx*100).toFixed(1)+'%';
+  $('mSave').textContent=fmtIQD(save)+' دینار';
+  $('mPay').textContent=save>0?'سیستەمەکە لە نزیکەی '+ku((SYS_COST/(save*12)).toFixed(1))+' ساڵدا پارەی خۆی دەداتەوە'+(st.cloudy?' (ئەگەر هەموو ڕۆژێک هەوراوی بێت)':''):'—';
 }
 function seed(){
   st.day={solProd:0,sol:0,bat:0,grd:0,gen:0,unmet:0};st.hist=[];st.slot=-1;
@@ -588,13 +639,25 @@ function setLabel(id,text,state){
   if(!w) w=text.length*7;
   const r=g.querySelector('rect');r.setAttribute('width',(w+20).toFixed(0));r.setAttribute('x',(-(w+20)/2).toFixed(0));
 }
+// sky colours through the day: [hour, top, bottom]
+const SKY=[[0,'#0b1440','#1f2a5c'],[5,'#1a2150','#3a3f6e'],[6.2,'#f39a68','#fcd9a6'],[7.3,'#f8c08e','#fdebc9'],[8.6,'#8cc4ef','#e2f0f6'],
+  [12.5,'#5fb0ec','#cfe8f7'],[16.5,'#84bfe9','#e6eef0'],[18.6,'#ee8549','#f8c88c'],[19.6,'#4b3a78','#c0708a'],[21,'#111a48','#2a2f5e'],[24,'#0b1440','#1f2a5c']];
+const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const mixC=(a,b,k)=>'#'+a.map((v,i)=>Math.round(v+(b[i]-v)*k).toString(16).padStart(2,'0')).join('');
+function skyAt(t,cloudy){
+  let i=0;while(SKY[i+1][0]<=t)i++;const A=SKY[i],B=SKY[i+1],k=(t-A[0])/(B[0]-A[0]);
+  let top=hx(mixC(hx(A[1]),hx(B[1]),k)),bot=hx(mixC(hx(A[2]),hx(B[2]),k));
+  if(cloudy){const g=hx('#9aa3ad');top=hx(mixC(top,g,.45));bot=hx(mixC(bot,g,.35));}
+  return [mixC(top,top,0),mixC(bot,bot,0)]; // arrays back to hex
+}
+const periodAt=t=>t<5?'شەو':t<11?'بەیانی':t<15?'نیوەڕۆ':t<19.5?'ئێوارە':'شەو';
 function pill(cls,txt){return `<span class="pill ${cls}"><i></i>${txt}</span>`;}
 
 function render(){
   const r=st.cur||compute(st.t,0), t=st.t;
   // sky
   const sun=sunAt(t);
-  const dark=Math.max(0,Math.min(1,1-sun*3.2))*.5;
+  const dark=Math.max(0,Math.min(1,1-sun*4.5))*.5;
   $('night').setAttribute('opacity',dark.toFixed(3));
   const frac=(t-6)/13;
   if(sun>0){const x=-250+frac*500,y=-55-140*Math.sin(Math.PI*Math.min(1,Math.max(0,frac)));
@@ -602,7 +665,11 @@ function render(){
     $('cloud').setAttribute('transform',`translate(${(x+22+Math.sin(t*2)*8).toFixed(1)},${(y+12).toFixed(1)})`);}
   else{$('sun').setAttribute('opacity','0');$('cloud').setAttribute('transform','translate(-120,-150)');}
   $('cloud').setAttribute('opacity',st.cloudy?'1':'0');
-  $('moon').setAttribute('transform','translate(-230,-170)');$('moon').setAttribute('opacity',(dark*2).toFixed(2));
+  $('moon').setAttribute('transform','translate(-110,-190)');$('moon').setAttribute('opacity',Math.min(1,Math.max(0,(dark-.3)/.15)).toFixed(2));
+  const [top,bot]=skyAt(t,st.cloudy);
+  $('skyTop').setAttribute('stop-color',top);$('skyBot').setAttribute('stop-color',bot);
+  $('stars').setAttribute('opacity',Math.min(1,Math.max(0,(dark-.33)/.15)).toFixed(2));
+  $('period').textContent=periodAt(t);
   svg.classList.toggle('sunny',r.sol>.5);
   // pylon wires
   svg.querySelectorAll('.hv').forEach(h=>h.classList.toggle('live',r.g));
@@ -611,9 +678,11 @@ function render(){
   $('wSol').style.setProperty('--c',r.dis>r.sUse?'var(--batt)':'var(--solar)');
   $('gen').classList.toggle('on',r.gen>.02);
   // battery gauge on box face
-  const soc=st.batt/BATT_CAP, zt=T+.15+.8*soc;
-  $('battLvl').setAttribute('points',pts([[12.8,3.5,T+.15],[12.8,4.1,T+.15],[12.8,4.1,zt],[12.8,3.5,zt]]));
+  const soc=st.batt/BATT_CAP, zt=T+.15+1.4*soc;
+  $('battLvl').setAttribute('points',pts([[12.9,3.15,T+.15],[12.9,4.1,T+.15],[12.9,4.1,zt],[12.9,3.15,zt]]));
   $('battLvl').setAttribute('fill',soc<.25?'var(--load)':'var(--batt)');
+  $('battLvl').setAttribute('class',r.charge>.05?'chg':'');
+  setLabel('tBatt','پاتری · '+ku(Math.round(soc*100))+'٪ '+(r.charge>.05?'▲':r.dis>.05?'▼':''),soc<.25?'bad':'');
   // house windows
   const powered=r.unmet<r.L*.4;
   svg.querySelectorAll('.win').forEach(w=>{w.classList.toggle('dark',!powered);w.classList.toggle('lit',powered&&dark>.15);});
@@ -660,9 +729,12 @@ function render(){
   $('time').value=t.toFixed(2);
   // environmental impact (approximate factors)
   const genCO2=d.gen*1.0, gridCO2=d.grd*0.7, saved=d.solProd*0.85;
-  $('cGen').innerHTML=f1(genCO2)+'<small>کگم CO₂</small>';
-  $('cGrid').innerHTML=f1(gridCO2)+'<small>کگم CO₂</small>';
-  $('cSaved').innerHTML=f1(saved)+'<small>کگم CO₂</small>';
+  const cmax=Math.max(1,genCO2,gridCO2);
+  $('cGen').textContent=f1(genCO2); $('cGrid').textContent=f1(gridCO2);
+  $('cGenBar').style.width=(genCO2/cmax*100).toFixed(1)+'%'; $('cGridBar').style.width=(gridCO2/cmax*100).toFixed(1)+'%';
+  $('cSolBar').style.width='0%';
+  $('cSaved').innerHTML=f1(saved)+'<small>کگم</small>';
+  renderMoney();
   $('cTrees').textContent='بەرامبەرە بە کاری '+ku(Math.round(saved/0.06))+' دار لە ڕۆژێکدا';
 }
 
@@ -715,7 +787,7 @@ const steps=[
  {title:'سویچ و ڕیزبەندی سەرچاوەکان',t:17,focus:HOUSE,play:true,
   text:'سندوقە خۆڵەمێشییەکەی ناوەڕاست سویچی ئۆتۆماتیکە. یەکەم جار سۆلار بەکاردەهێنێت، پاشان کارەبای حکومی، پاشان پاتری، و لە کۆتاییدا مۆلیدە. بەم شێوەیە پیسترین سەرچاوە کەمترین کات کار دەکات.'},
  {title:'ئەنجام: بۆچی سۆلار باشترە بۆ ژینگە؟',t:17,play:true,
-  text:'سۆلار هیچ گازێکی گەرمکەری زەوی دروست ناکات، هەوای شار پاک دەکاتەوە و دەنگە دەنگی مۆلیدە نامێنێت. کوردستان ساڵانە زیاتر لە ٣٠٠٠ کاتژمێر خۆری هەیە. کارتەکانی CO₂ لە خوارەوە پیشان دەدەن ئەمڕۆ چەند گاز ڕێگری لێکرا.'}
+  text:'سۆلار هیچ گازێکی گەرمکەری زەوی دروست ناکات، هەوای شار پاک دەکاتەوە و دەنگە دەنگی مۆلیدە نامێنێت. کوردستان ساڵانە زیاتر لە ٣٠٠٠ کاتژمێر خۆری هەیە. کارتەکانی تەنیشت وێنەکە پیشان دەدەن چەند پارە پاشەکەوت دەکرێت و ئەمڕۆ چەند گاز ڕێگری لێکرا.'}
 ];
 let gi=0;
 function syncSeg(id,v){$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v?'true':'false'));}
@@ -746,6 +818,26 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowRight'){e.preventDefault();applyStep(gi-1);}
 });
 applyStep(0);
+
+// ---------- classroom fullscreen ----------
+const fsBtn=$('fsBtn');
+function setPresent(on){document.body.classList.toggle('present',on);fsBtn.setAttribute('aria-pressed',on?'true':'false');
+  fsBtn.textContent=on?'✕ داخستنی پیشاندان':'⛶ پڕکردنەوەی شاشە';for(const k in lblCache) delete lblCache[k];}
+fsBtn.addEventListener('click',()=>{
+  const on=!document.body.classList.contains('present');
+  const de=document.documentElement;
+  try{
+    if(on&&de.requestFullscreen&&!document.fullscreenElement) de.requestFullscreen().catch(()=>{});
+    if(!on&&document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  }catch(e){}
+  setPresent(on);
+});
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('present'))setPresent(false);});
+document.addEventListener('keydown',e=>{
+  if(e.target.closest&&e.target.closest('input,textarea'))return;
+  if((e.key==='f'||e.key==='F')&&!e.ctrlKey&&!e.metaKey){e.preventDefault();fsBtn.click();}
+  else if(e.key==='Escape'&&document.body.classList.contains('present')&&!document.fullscreenElement)setPresent(false);
+});
 
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{for(const k in lblCache) delete lblCache[k];});
 requestAnimationFrame(frame);
